@@ -1,0 +1,186 @@
+// TripTale ER schema
+// Switch provider to "postgresql" for production (no other changes required).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  username       String   @unique
+  email          String   @unique
+  password       String
+  fullName       String?
+  profilePicture String?
+  bio            String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  trips         Trip[]
+  comments      Comment[]
+  ratings       Rating[]
+  savedTrips    SavedTrip[]
+  refreshTokens RefreshToken[]
+  followers     Follow[]       @relation("Following") // users who follow me
+  following     Follow[]       @relation("Follower")  // users I follow
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  slug        String  @unique
+  icon        String?
+  description String?
+  coverImage  String?
+  trips       Trip[]
+
+  @@map("categories")
+}
+
+model Trip {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  location    String   // legacy combined location (kept for compat)
+  region      String?  // e.g. "Baffin Mountains"
+  country     String?  // e.g. "Canada"
+  coverPhoto  String?
+  budget      Float?
+  categoryId  Int
+  userId      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category   Category    @relation(fields: [categoryId], references: [id])
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  ratings    Rating[]
+  savedBy    SavedTrip[]
+  media      TripMedia[]
+  guides     TripGuide[]
+
+  @@index([categoryId])
+  @@index([userId])
+  @@index([location])
+  @@map("trips")
+}
+
+model TripGuide {
+  id        Int      @id @default(autoincrement())
+  tripId    Int
+  type      String   // budget | mustvisit | food | warnings | extra
+  label     String
+  icon      String?
+  text      String   @default("")
+  locations String   @default("[]") // JSON stringified array of location names
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, type])
+  @@index([tripId])
+  @@map("trip_guides")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  userId    Int
+  tripId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  value     Int
+  userId    Int
+  tripId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tripId])
+  @@index([tripId])
+  @@map("ratings")
+}
+
+model SavedTrip {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  tripId    Int
+  notes     String?
+  priority  Int       @default(0)
+  pinned    Boolean   @default(false)
+  visited   Boolean   @default(false)
+  visitDate DateTime?
+  comment   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tripId])
+  @@index([userId])
+  @@map("saved_trips")
+}
+
+model TripMedia {
+  id         Int      @id @default(autoincrement())
+  tripId     Int
+  mediaUrl   String
+  mediaType  String
+  caption    String?
+  uploadedAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@map("trip_media")
+}

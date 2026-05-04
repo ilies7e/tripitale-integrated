@@ -1,0 +1,60 @@
+# One-shot launcher for TripTale backend + shared PostgreSQL.
+# Run:  docker compose up -d
+# Stop: docker compose down
+# Data is persisted in the `postgres-data` volume so it survives container restarts.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: triptale-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: triptale
+      POSTGRES_PASSWORD: triptale_dev_pw
+      POSTGRES_DB: triptale
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U triptale -d triptale"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    image: node:20-bookworm-slim
+    container_name: triptale-backend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - backend-node-modules:/app/node_modules
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: "postgresql://triptale:triptale_dev_pw@postgres:5432/triptale?schema=public"
+      JWT_ACCESS_SECRET: triptale-access-7a3e9c2b4d5f6a8e1c9d7b6a5f4e3d2c
+      JWT_REFRESH_SECRET: triptale-refresh-9d8e7f6c5b4a3e2d1c0b9a8f7e6d5c4b
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 30d
+      UPLOAD_DIR: ./uploads
+      MAX_FILE_SIZE_MB: "20"
+      CORS_ORIGIN: "*"
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        apt-get update -qq && apt-get install -y -qq openssl curl ca-certificates >/dev/null &&
+        npm install --omit=optional --no-audit --no-fund &&
+        npx prisma migrate deploy &&
+        (npx tsx prisma/seed.ts || true) &&
+        npx tsx src/server.ts
+      "
+
+volumes:
+  postgres-data:
+  backend-node-modules:
