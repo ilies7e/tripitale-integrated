@@ -5,13 +5,16 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import COLORS from '../../assets/colors/colors';
 import { SavedTripsApi } from '../../src/api/services';
+import { resolveMediaUrl } from '../../src/api/config';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
 
 const fallbackImage = (trip) =>
-  trip?.coverPhoto ||
-  trip?.media?.[0]?.mediaUrl ||
+  resolveMediaUrl(
+    trip?.coverPhoto ||
+    trip?.media?.[0]?.mediaUrl
+  ) ||
   'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop';
 
 const toDateString = (iso) => (iso ? String(iso).split('T')[0] : '');

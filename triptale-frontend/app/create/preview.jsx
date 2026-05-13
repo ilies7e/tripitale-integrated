@@ -86,7 +86,7 @@ export default function PreviewTrip() {
       Alert.alert('Published!', 'Your trip is now live.', [
         {
           text: 'View',
-          onPress: () => router.replace(`/trip/${trip.id}`),
+          onPress: () => router.replace('/(tabs)/myProfile'),
         },
       ]);
     } catch (err) {

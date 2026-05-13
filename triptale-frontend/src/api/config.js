@@ -37,3 +37,24 @@ export const loadApiBaseUrl = async () => {
 };
 
 export const getDefaultApiBaseUrl = deriveDefaultBaseUrl;
+
+/**
+ * Rewrites a media URL so it uses the current API base URL instead of
+ * localhost. This is needed because the backend stores URLs like
+ * "http://localhost:4000/uploads/..." but on a physical device / emulator
+ * `localhost` refers to the device itself, not the backend server.
+ *
+ * Also handles relative paths (e.g. "/uploads/...") returned by updated
+ * backend versions.
+ */
+export const resolveMediaUrl = (url) => {
+  if (!url) return null;
+  // Relative path — prepend the API base
+  if (url.startsWith('/')) return `${getApiBaseUrl()}${url}`;
+  // Absolute URL with localhost — replace host
+  if (/https?:\/\/localhost(:\d+)?/.test(url)) {
+    return url.replace(/https?:\/\/localhost(:\d+)?/, getApiBaseUrl());
+  }
+  // Already an absolute URL with a real host — keep as-is
+  return url;
+};

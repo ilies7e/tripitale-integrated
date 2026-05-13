@@ -6,7 +6,7 @@ export const createTripSchema = z.object({
   location: z.string().max(200).optional().default(''),
   region: z.string().max(120).optional(),
   country: z.string().max(80).optional(),
-  coverPhoto: z.string().url().optional(),
+  coverPhoto: z.string().optional(),
   budget: z.number().nonnegative().optional(),
   categoryId: z.number().int().positive(),
 });

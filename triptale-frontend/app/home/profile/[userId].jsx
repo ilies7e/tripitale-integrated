@@ -1,18 +1,20 @@
 // Shows: another user's profile (view + follow)
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Image,
   ImageBackground,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { UsersApi } from '../../../src/api/services';
+import { resolveMediaUrl } from '../../../src/api/config';
 import { useAuth } from '../../../src/context/AuthContext';
 
 const COLORS = {
@@ -22,6 +24,12 @@ const COLORS = {
   ashGrey: '#AEC3B0',
   beige: '#EFF6E0',
 };
+
+const FILTERS = [
+  { key: 'latest', label: 'Latest' },
+  { key: 'mostLiked', label: 'Most Liked' },
+  { key: 'oldest', label: 'Oldest' },
+];
 
 export default function ViewProfile() {
   const router = useRouter();
@@ -33,8 +41,23 @@ export default function ViewProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('latest');
 
   const isOwn = !!me && String(me.id) === String(userId);
+
+  const sortedTrips = useMemo(() => {
+    const copy = [...trips];
+    if (activeFilter === 'latest') {
+      return copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    if (activeFilter === 'oldest') {
+      return copy.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
+    if (activeFilter === 'mostLiked') {
+      return copy.sort((a, b) => (b.rating?.average ?? 0) - (a.rating?.average ?? 0));
+    }
+    return copy;
+  }, [trips, activeFilter]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -147,42 +170,83 @@ export default function ViewProfile() {
           </Text>
         </TouchableOpacity>
       )}
+
+      {/* Filter pills */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterScroll}
+        contentContainerStyle={styles.filterRow}
+      >
+        {FILTERS.map((f) => (
+          <TouchableOpacity
+            key={f.key}
+            style={[
+              styles.pill,
+              activeFilter === f.key && styles.pillActive,
+            ]}
+            onPress={() => setActiveFilter(f.key)}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={[
+                styles.pillText,
+                activeFilter === f.key && styles.pillTextActive,
+              ]}
+            >
+              {f.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      style={styles.cardContainer}
-      onPress={() => router.push(`/trip/${item.id}`)}
-    >
-      <ImageBackground
-        source={{
-          uri:
-            item.coverPhoto ||
-            item.media?.[0]?.mediaUrl ||
-            'https://images.unsplash.com/photo-1504280390267-3310452f19d2?auto=format&fit=crop&w=800&q=80',
-        }}
-        style={styles.cardImage}
-        imageStyle={{ borderRadius: 16 }}
+  const renderItem = ({ item }) => {
+    const avg = item.rating?.average ?? 0;
+    const ratingDisplay = avg > 0 ? avg.toFixed(1) : null;
+    return (
+      <TouchableOpacity
+        activeOpacity={0.9}
+        style={styles.cardContainer}
+        onPress={() => router.push(`/trip/${item.id}`)}
       >
-        <View style={styles.cardOverlay}>
-          <Text style={styles.cardCategory}>{(item.category?.name || '').toUpperCase()}</Text>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          <Text style={styles.cardLocation}>
-            {item.country || item.region || item.location}
-          </Text>
-        </View>
-      </ImageBackground>
-    </TouchableOpacity>
-  );
+        <ImageBackground
+          source={{
+            uri:
+              resolveMediaUrl(
+                item.coverPhoto ||
+                item.media?.[0]?.mediaUrl
+              ) ||
+              'https://images.unsplash.com/photo-1504280390267-3310452f19d2?auto=format&fit=crop&w=800&q=80',
+          }}
+          style={styles.cardImage}
+          imageStyle={{ borderRadius: 16 }}
+        >
+          <View style={styles.cardOverlay}>
+            {ratingDisplay && (
+              <View style={styles.ratingBadge}>
+                <Ionicons name="star" size={12} color="#FFD700" />
+                <Text style={styles.ratingBadgeText}>{ratingDisplay}</Text>
+              </View>
+            )}
+            <Text style={styles.cardCategory}>{(item.category?.name || '').toUpperCase()}</Text>
+            <Text style={styles.cardTitle}>{item.title}</Text>
+            <Text style={styles.cardLocation}>
+              {item.country || item.region || item.location}
+            </Text>
+          </View>
+        </ImageBackground>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <FlatList
       style={{ flex: 1, backgroundColor: COLORS.beige }}
       contentContainerStyle={{ paddingBottom: 40 }}
       ListHeaderComponent={renderHeader}
-      data={trips}
+      data={sortedTrips}
       keyExtractor={(t) => String(t.id)}
       renderItem={renderItem}
       ListEmptyComponent={
@@ -242,8 +306,35 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.ashGrey,
   },
   followBtnText: { color: COLORS.beige, fontWeight: '700' },
+  filterScroll: { marginTop: 16, alignSelf: 'stretch' },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
+  pill: {
+    paddingVertical: 7,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: COLORS.airForceBlue,
+    backgroundColor: 'transparent',
+  },
+  pillActive: {
+    backgroundColor: COLORS.darkTeal,
+    borderColor: COLORS.darkTeal,
+  },
+  pillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.airForceBlue,
+  },
+  pillTextActive: {
+    color: COLORS.beige,
+  },
   cardContainer: {
-    height: 160,
+    height: 300,
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 16,
@@ -255,6 +346,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)',
     padding: 16,
     justifyContent: 'flex-end',
+  },
+  ratingBadge: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  ratingBadgeText: {
+    color: '#FFD700',
+    fontSize: 12,
+    fontWeight: '700',
   },
   cardCategory: { color: COLORS.beige, fontSize: 12, letterSpacing: 1 },
   cardTitle: { color: COLORS.beige, fontSize: 22, fontWeight: 'bold', fontFamily: 'serif' },

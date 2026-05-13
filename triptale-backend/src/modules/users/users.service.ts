@@ -66,5 +66,20 @@ export const tripsByUser = async (id: number, page = 1, limit = 20) => {
     }),
     prisma.trip.count({ where: { userId: id } }),
   ]);
-  return { items, total, page, limit };
+
+  const enriched = await Promise.all(
+    items.map(async (trip) => {
+      const agg = await prisma.rating.aggregate({
+        where: { tripId: trip.id },
+        _avg: { value: true },
+        _count: { _all: true },
+      });
+      return {
+        ...trip,
+        rating: { average: agg._avg.value ?? 0, count: agg._count._all },
+      };
+    }),
+  );
+
+  return { items: enriched, total, page, limit };
 };

@@ -38,8 +38,9 @@ export default function Slider({ trips = [], loading = false }) {
 
 const styles = StyleSheet.create({
   listContainer: {
+    flex: 1,
     width,
-    height: height * 0.8,
+
   },
   list: {},
   listContent: {},

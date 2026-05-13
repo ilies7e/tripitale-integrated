@@ -14,12 +14,7 @@ import {
 import { FontAwesome5 } from '@expo/vector-icons';
 import { CategoriesApi } from '../../src/api/services';
 
-const COLORS = {
-  inkBlack: '#01161E',
-  darkTeal: '#124559',
-  beige: '#EFF6E0',
-  ashGrey: '#AEC3B0',
-};
+import COLORS from '@/assets/colors/colors';
 
 // Map each category slug (or backend `icon` string) to a FontAwesome5 icon name.
 // Keeps the minimalist black-icon look from the design mockups.
@@ -110,6 +105,8 @@ export default function Categories() {
                     params: {
                       categoryId: String(item.id),
                       title: item.name,
+                      icon: item.icon,
+                      slug: item.slug,
                     },
                   })
                 }

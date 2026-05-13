@@ -1,4 +1,5 @@
 import { api } from './client';
+import { Platform } from 'react-native';
 
 export const AuthApi = {
   login: (email, password) => api.post('/api/auth/login', { email, password }),
@@ -84,14 +85,27 @@ export const MediaApi = {
   upload: async (tripId, uris, caption) => {
     const form = new FormData();
     const list = Array.isArray(uris) ? uris : [uris];
-    list.forEach((uri, i) => {
-      const name = uri.split('/').pop() || `file-${i}.jpg`;
-      form.append('files', {
-        uri,
-        name,
-        type: guessMime(uri),
+
+    if (Platform.OS === 'web') {
+      await Promise.all(
+        list.map(async (uri, i) => {
+          const name = uri.split('/').pop() || `file-${i}.jpg`;
+          const res = await fetch(uri);
+          const blob = await res.blob();
+          form.append('files', blob, name);
+        })
+      );
+    } else {
+      list.forEach((uri, i) => {
+        const name = uri.split('/').pop() || `file-${i}.jpg`;
+        form.append('files', {
+          uri,
+          name,
+          type: guessMime(uri),
+        });
       });
-    });
+    }
+
     if (caption) form.append('caption', caption);
     return api.post(`/api/trips/${tripId}/media`, form);
   },

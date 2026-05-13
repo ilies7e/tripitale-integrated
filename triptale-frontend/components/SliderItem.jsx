@@ -1,3 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '@/assets/colors/colors';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -9,6 +12,7 @@ import {
   Text,
   View,
 } from 'react-native';
+
 
 const FALLBACK_IMG =
   'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=870&q=80';
@@ -24,34 +28,46 @@ export default function SliderItem({ item }) {
     <View style={styles.cardContainer}>
       <Pressable onPress={() => router.push(`/trip/${item.id}`)} style={styles.imgPress}>
         <ImageBackground source={{ uri: imageUri }} style={styles.imgCard} resizeMode="cover">
-          <View style={styles.overlay} />
-          <Text style={styles.title}>{item.title}</Text>
-          <View style={styles.locations}>
-            {!!item.location1 && (
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.9)']}
+            locations={[0, 0.5, 1]}
+            style={styles.overlay}
+          />
+          <Text style={styles.title} adjustsFontSizeToFit numberOfLines={3}>
+            {(item.title || '').toUpperCase()}
+          </Text>
+          <View style={styles.locationContainer}>
+            <Ionicons name="location" size={48} color={COLORS.beige} style={styles.locationIcon} />
+            <View>
               <Text style={styles.location1}>{item.location1}</Text>
-            )}
-            {!!item.location2 && (
-              <Text style={styles.location2}>{item.location2}</Text>
-            )}
+              {!!item.location2 && <Text style={styles.location2}>{item.location2}</Text>}
+            </View>
           </View>
         </ImageBackground>
       </Pressable>
 
-      {item.profileId ? (
-        <Pressable
-          onPress={() => router.push(`/home/profile/${item.profileId}`)}
-          style={styles.profileContent}
-        >
-          {authorPic ? (
-            <Image source={{ uri: authorPic }} style={styles.profileImg} />
-          ) : (
-            <View style={styles.profileImg} />
-          )}
-          <Text style={styles.profileName}>{authorName}</Text>
-        </Pressable>
-      ) : (
-        <View style={styles.profileContent} />
-      )}
+      <View style={styles.profileSection}>
+        {item.profileId ? (
+          <Pressable
+            onPress={() => router.push(`/home/profile/${item.profileId}`)}
+            style={styles.profileContent}
+          >
+            {authorPic ? (
+              <Image source={{ uri: authorPic }} style={styles.profileImg} />
+            ) : (
+              <View style={[styles.profileImg, { alignItems: 'center', justifyContent: 'center' }]}>
+                <Ionicons name="person" size={40} color="#ccc" />
+              </View>
+            )}
+            <View style={styles.profileTextCol}>
+              <Text style={styles.profileName}>{authorName}</Text>
+              <Text style={styles.profileRole}>professional traveler</Text>
+            </View>
+          </Pressable>
+        ) : (
+          <View style={styles.profileContent} />
+        )}
+      </View>
     </View>
   );
 }
@@ -59,52 +75,84 @@ export default function SliderItem({ item }) {
 const styles = StyleSheet.create({
   cardContainer: {
     alignItems: 'center',
-    justifyContent: 'space-between',
     width,
-    height: height * 0.8,
+    height: '100%',
+    paddingBottom: 10
   },
   imgPress: {
-    width: width * 0.85,
+    width: width * 0.8,
     flex: 1,
-    borderRadius: 16,
     overflow: 'hidden',
+
   },
   imgCard: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
+    padding: 10,
     flex: 1,
-    width: '100%',
+    justifyContent: 'space-between',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   title: {
     textAlign: 'center',
-    color: 'white',
-    fontSize: 30,
+    color: COLORS.beige,
+    fontSize: 28,
+    fontWeight: 'bold',
+    fontFamily: 'serif',
+    marginTop: 10,
+    letterSpacing: 1,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  locationIcon: {
+    marginRight: 10,
+  },
+  location1: {
+    fontSize: 28,
+    color: COLORS.beige,
     fontWeight: 'bold',
     fontFamily: 'serif',
   },
-  locations: {
-    alignItems: 'center',
+  location2: {
+    fontSize: 16,
+    color: COLORS.beige,
+    fontFamily: 'serif',
+    opacity: 0.9,
+    marginTop: 2,
   },
-  location1: { fontSize: 26, color: 'white', fontWeight: '600' },
-  location2: { fontSize: 18, color: 'white', opacity: 0.9 },
+  profileSection: {
+    width: width * 0.8,
+    marginTop: 20,
+    height: 80,
+  },
   profileContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    height: '12%',
-    width: '85%',
   },
   profileImg: {
-    borderRadius: 40,
-    width: 60,
-    height: 60,
-    backgroundColor: '#aaa',
-    marginRight: 12,
+    borderRadius: 45,
+    width: 80,
+    height: 80,
+    backgroundColor: COLORS.beige,
+    marginRight: 16,
   },
-  profileName: { fontSize: 20, color: 'white', fontWeight: '600' },
+  profileTextCol: {
+    justifyContent: 'center',
+  },
+  profileName: {
+    fontSize: 20,
+    color: COLORS.beige,
+    fontWeight: 'bold',
+    fontFamily: 'serif',
+  },
+  profileRole: {
+    fontSize: 16,
+    color: COLORS.beige,
+    fontFamily: 'serif',
+    opacity: 0.8,
+    marginTop: 2,
+  },
 });

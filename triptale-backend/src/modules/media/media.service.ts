@@ -24,7 +24,7 @@ export const attach = async (
       prisma.tripMedia.create({
         data: {
           tripId,
-          mediaUrl: `${env.APP_URL}/uploads/${path.basename(file.path)}`,
+          mediaUrl: `/uploads/${path.basename(file.path)}`,
           mediaType: inferMediaType(file.mimetype),
           caption,
         },

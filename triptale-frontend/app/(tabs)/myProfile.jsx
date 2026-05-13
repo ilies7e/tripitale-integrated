@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, ImageBackground, RefreshControl, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { ActivityIndicator, FlatList, ImageBackground, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { UsersApi } from '../../src/api/services';
+import { resolveMediaUrl } from '../../src/api/config';
 
 const COLORS = {
   inkBlack: '#01161E',
@@ -25,8 +27,10 @@ const mapTrip = (t) => ({
   title: t.title,
   location: t.location || t.country || t.region || '',
   image:
-    t.coverPhoto ||
-    t.media?.[0]?.mediaUrl ||
+    resolveMediaUrl(
+      t.coverPhoto ||
+      t.media?.[0]?.mediaUrl
+    ) ||
     'https://images.unsplash.com/photo-1504280390267-3310452f19d2?auto=format&fit=crop&w=800&q=80',
   createdAt: t.createdAt,
   savedCount: t._count?.savedBy || 0,
@@ -148,7 +152,7 @@ export default function MyProfile() {
           {user?.bio || "Passionate traveler sharing favorite destinations, tips, and hidden gems. Let's wander together!"}
         </Text>
 
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={styles.actionRow}>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => router.push('/home/profile/edit')}
@@ -161,6 +165,29 @@ export default function MyProfile() {
             <Ionicons name="log-out-outline" size={16} color={COLORS.airForceBlue} />
           </TouchableOpacity>
         </View>
+
+        {/* Premium upgrade banner */}
+        <TouchableOpacity
+          activeOpacity={0.88}
+          onPress={() => router.push('/home/premium')}
+          style={styles.premiumBannerWrap}
+        >
+          <LinearGradient
+            colors={["#AEC3B0", '#68ffc804']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.premiumBanner}
+          >
+            <View style={styles.premiumLeft}>
+              <Ionicons name="star" size={20} color="#d49800ff" />
+              <View style={{ marginLeft: 12 }}>
+                <Text style={styles.premiumBannerTitle}>Upgrade to Premium</Text>
+                <Text style={styles.premiumBannerSub}>Unlock badges, analytics &amp; more</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#d49800ff" />
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.filterSection}>
@@ -331,6 +358,42 @@ const styles = StyleSheet.create({
     fontFamily: 'serif',
     color: COLORS.airForceBlue,
     marginRight: 8,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 14,
+  },
+  premiumBannerWrap: {
+    alignSelf: 'stretch',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  premiumBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.airForceBlue,
+  },
+  premiumLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  premiumBannerTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#d49800ff',
+    letterSpacing: 0.2,
+  },
+  premiumBannerSub: {
+    fontSize: 12,
+    color: '#404841ff',
+    marginTop: 2,
   },
   filterSection: {
     flexDirection: 'row',

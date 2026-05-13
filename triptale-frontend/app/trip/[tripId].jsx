@@ -6,23 +6,36 @@ import {
   Alert,
   FlatList,
   Image,
+  Modal,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { CommentsApi, RatingsApi, SavedTripsApi, TripsApi } from '../../src/api/services';
+import { resolveMediaUrl } from '../../src/api/config';
 import { useAuth } from '../../src/context/AuthContext';
 
+const COLORS = {
+  inkBlack: '#01161E',
+  darkTeal: '#124559',
+  airForceBlue: '#598392',
+  ashGrey: '#AEC3B0',
+  beige: '#EFF6E0',
+};
+
 const GUIDE_META = {
-  budget: { title: 'Budget Info', icon: '💰', bg: '#E6ECD2' },
-  mustvisit: { title: 'Must-Visit', icon: '🧊', bg: '#DFF2F3' },
-  food: { title: 'Food & Restaurants', icon: '🍔', bg: '#F6ECD8' },
-  warnings: { title: 'Warnings', icon: '⚠️', bg: '#F6DADA' },
-  extra: { title: 'Extra Tips', icon: '✨', bg: '#EFE6F5' },
+  budget: { title: 'Budget Info', icon: '💰', bg: '#d0edcdff' },
+  mustvisit: { title: 'Must-Visit', icon: '🧊', bg: '#c8e6e0ff' },
+  food: { title: 'Food & Restaurants', icon: '🍔', bg: '#fff1d5ff' },
+  warnings: { title: 'Warnings', icon: '⚠️', bg: '#E7C6C2' },
+  extra: { title: 'Extra Tips', icon: '✨', bg: '#ffffddff' },
 };
 const GUIDE_ORDER = ['budget', 'mustvisit', 'food', 'warnings', 'extra'];
 
@@ -33,7 +46,7 @@ const Accordion = ({ title, icon, bgColor, children }) => {
       <TouchableOpacity style={styles.accordionHeader} onPress={() => setExpanded((v) => !v)}>
         <Text style={styles.accordionIcon}>{icon}</Text>
         <Text style={styles.accordionTitle}>{title}</Text>
-        <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={20} />
+        <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={COLORS.inkBlack} />
       </TouchableOpacity>
       {expanded && <View style={styles.accordionContent}>{children}</View>}
     </View>
@@ -50,6 +63,8 @@ export default function TripDetails() {
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [galleryModalVisible, setGalleryModalVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const load = useCallback(async () => {
     if (!tripId) return;
@@ -118,43 +133,64 @@ export default function TripDetails() {
     return map;
   }, [trip]);
 
+  const gallery = useMemo(() => {
+    return (trip?.media || []).filter((m) => m.mediaType === 'image');
+  }, [trip]);
+
+  const openGalleryModal = (index) => {
+    setSelectedImageIndex(index);
+    setGalleryModalVisible(true);
+  };
+
+  const goToPreviousImage = () => {
+    if (selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
+    }
+  };
+
+  const goToNextImage = () => {
+    if (selectedImageIndex < gallery.length - 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    }
+  };
+
   if (loading) {
     return (
-      <View style={[styles.root, styles.centered]}>
-        <ActivityIndicator size="large" color="#124559" />
-      </View>
+      <SafeAreaView style={[styles.root, styles.centered]}>
+        <ActivityIndicator size="large" color={COLORS.darkTeal} />
+      </SafeAreaView>
     );
   }
   if (!trip) {
     return (
-      <View style={[styles.root, styles.centered]}>
-        <Text>Trip not found.</Text>
-      </View>
+      <SafeAreaView style={[styles.root, styles.centered]}>
+        <Text style={{ color: COLORS.inkBlack }}>Trip not found.</Text>
+      </SafeAreaView>
     );
   }
 
   const parts = (trip.location || '').split(',').map((p) => p.trim()).filter(Boolean);
   const region = trip.region || parts[0] || '';
   const country = trip.country || parts[parts.length - 1] || '';
-  const banner = trip.coverPhoto || trip.media?.[0]?.mediaUrl;
+  const banner = resolveMediaUrl(trip.coverPhoto || trip.media?.[0]?.mediaUrl);
   const author = trip.user;
-  const gallery = (trip.media || []).filter((m) => m.mediaType === 'image');
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
+      <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Icon name="chevron-back" size={28} />
+          <Icon name="chevron-back" size={28} color={COLORS.inkBlack} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>TripTale</Text>
-        <Icon name="earth" size={25} />
+        <Icon name="earth" size={25} color={COLORS.darkTeal} />
       </View>
 
       <View style={styles.bannerContainer}>
         {banner ? (
           <Image source={{ uri: banner }} style={styles.bannerImage} />
         ) : (
-          <View style={[styles.bannerImage, { backgroundColor: '#335' }]} />
+          <View style={[styles.bannerImage, { backgroundColor: COLORS.airForceBlue }]} />
         )}
         <View style={styles.overlayContent}>
           <Text style={styles.camping}>{(trip.category?.name || '').toUpperCase()}</Text>
@@ -170,14 +206,14 @@ export default function TripDetails() {
 
       <ScrollView style={styles.detailsCard} contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={styles.cardHeader}>
-          <Icon name="location-outline" size={22} style={{ marginRight: 6 }} />
+          <Icon name="location-outline" size={22} style={{ marginRight: 6 }} color={COLORS.darkTeal} />
           <View style={{ flex: 1 }}>
             <Text style={styles.destination}>{trip.title}</Text>
             {!!region && <Text style={styles.location}>{region}</Text>}
             {!!country && <Text style={styles.country}>{country}</Text>}
           </View>
           <TouchableOpacity onPress={toggleSave}>
-            <Icon name={saved ? 'bookmark' : 'bookmark-outline'} size={24} />
+            <Icon name={saved ? 'bookmark' : 'bookmark-outline'} size={24} color={COLORS.darkTeal} />
           </TouchableOpacity>
         </View>
 
@@ -187,7 +223,7 @@ export default function TripDetails() {
               <Icon
                 name={n <= rating ? 'star' : 'star-outline'}
                 size={24}
-                color="#E2A93A"
+                color={COLORS.airForceBlue}
               />
             </TouchableOpacity>
           ))}
@@ -208,8 +244,10 @@ export default function TripDetails() {
               keyExtractor={(m) => String(m.id)}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ marginTop: 6, marginBottom: 10 }}
-              renderItem={({ item }) => (
-                <Image source={{ uri: item.mediaUrl }} style={styles.galleryItem} />
+              renderItem={({ item, index }) => (
+                <TouchableOpacity onPress={() => openGalleryModal(index)}>
+                  <Image source={{ uri: resolveMediaUrl(item.mediaUrl) }} style={styles.galleryItem} />
+                </TouchableOpacity>
               )}
             />
           </>
@@ -231,7 +269,7 @@ export default function TripDetails() {
             locations = Array.isArray(g.locations)
               ? g.locations
               : JSON.parse(g.locations || '[]');
-          } catch {}
+          } catch { }
           return (
             <Accordion
               key={t}
@@ -239,7 +277,8 @@ export default function TripDetails() {
               icon={g.icon || meta.icon}
               bgColor={meta.bg}
             >
-              {!!g.text && <Text style={styles.guideText}>{g.text}</Text>}
+              {!!g.text && <Text style={styles.guideText}>{g.text}</Text>
+              }
               {locations.map((loc, i) => (
                 <Text key={i} style={styles.guideText}>• {loc}</Text>
               ))}
@@ -256,7 +295,7 @@ export default function TripDetails() {
             value={newComment}
             onChangeText={setNewComment}
             placeholder="Write a comment..."
-            placeholderTextColor="#888"
+            placeholderTextColor={COLORS.airForceBlue}
             multiline
           />
           <TouchableOpacity
@@ -264,7 +303,7 @@ export default function TripDetails() {
             onPress={postComment}
             disabled={!newComment.trim()}
           >
-            <Icon name="send" size={18} color="#fff" />
+            <Icon name="send" size={18} color={COLORS.beige} />
           </TouchableOpacity>
         </View>
         {comments.map((c) => {
@@ -296,25 +335,77 @@ export default function TripDetails() {
           );
         })}
       </ScrollView>
-    </View>
+
+      {/* Gallery Modal */}
+      <Modal
+        visible={galleryModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setGalleryModalVisible(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setGalleryModalVisible(false)}>
+              <Icon name="close" size={28} color={COLORS.beige} />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>
+              {selectedImageIndex + 1} / {gallery.length}
+            </Text>
+            <View style={{ width: 28 }} />
+          </View>
+
+          {gallery.length > 0 && (
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: resolveMediaUrl(gallery[selectedImageIndex].mediaUrl) }}
+                style={styles.fullscreenImage}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={[styles.navButton, selectedImageIndex === 0 && styles.navButtonDisabled]}
+              onPress={goToPreviousImage}
+              disabled={selectedImageIndex === 0}
+            >
+              <Icon name="chevron-back" size={28} color={selectedImageIndex === 0 ? '#666' : COLORS.beige} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.navButton, selectedImageIndex === gallery.length - 1 && styles.navButtonDisabled]}
+              onPress={goToNextImage}
+              disabled={selectedImageIndex === gallery.length - 1}
+            >
+              <Icon name="chevron-forward" size={28} color={selectedImageIndex === gallery.length - 1 ? '#666' : COLORS.beige} />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#222' },
+  root: {
+    flex: 1,
+    backgroundColor: COLORS.inkBlack,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   centered: { alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'android' ? 12 : 8,
     paddingBottom: 6,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.beige,
   },
-  headerTitle: { fontWeight: 'bold', fontSize: 26 },
+  headerTitle: { fontWeight: 'bold', fontSize: 26, color: COLORS.inkBlack },
   bannerContainer: { width: '100%', height: 220 },
-  bannerImage: { position: 'absolute', width: '100%', height: '100%', opacity: 0.7 },
+  bannerImage: { position: 'absolute', width: '100%', height: '100%', opacity: 0.75 },
   overlayContent: {
     paddingTop: 10,
     paddingBottom: 30,
@@ -322,11 +413,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  camping: { color: '#fff', fontWeight: 'bold', fontSize: 22 },
-  postedBy: { textAlign: 'center', color: '#fff', fontSize: 16 },
+  camping: { color: COLORS.beige, fontWeight: 'bold', fontSize: 22 },
+  postedBy: { textAlign: 'center', color: COLORS.beige, fontSize: 16 },
   detailsCard: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.beige,
     borderTopRightRadius: 24,
     borderTopLeftRadius: 24,
     marginTop: -24,
@@ -334,29 +425,29 @@ const styles = StyleSheet.create({
     minHeight: 500,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  destination: { fontWeight: '900', fontSize: 26, textAlign: 'center' },
-  location: { textAlign: 'center', fontSize: 16 },
-  country: { textAlign: 'center', color: '#999', fontSize: 15 },
+  destination: { fontWeight: '900', fontSize: 26, textAlign: 'center', color: COLORS.inkBlack },
+  location: { textAlign: 'center', fontSize: 16, color: COLORS.airForceBlue },
+  country: { textAlign: 'center', color: COLORS.airForceBlue, fontSize: 15 },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginBottom: 14,
   },
-  ratingText: { marginLeft: 8, color: '#666' },
+  ratingText: { marginLeft: 8, color: COLORS.airForceBlue },
   gallery: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  galleryTitle: { fontSize: 18, fontWeight: '600' },
+  galleryTitle: { fontSize: 18, fontWeight: '600', color: COLORS.inkBlack },
   galleryItem: {
     width: 90,
     height: 90,
-    backgroundColor: '#e7e7e7',
+    backgroundColor: COLORS.ashGrey,
     marginRight: 8,
     borderRadius: 10,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 12, marginBottom: 4 },
-  aboutText: { fontSize: 15, color: '#555', lineHeight: 21 },
-  budgetLine: { fontSize: 14, color: '#124559', marginTop: 8, fontWeight: '600' },
-  beforeGo: { marginTop: 14, fontSize: 18, fontWeight: '600' },
+  sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 12, marginBottom: 4, color: COLORS.inkBlack },
+  aboutText: { fontSize: 15, color: COLORS.inkBlack, lineHeight: 21 },
+  budgetLine: { fontSize: 14, color: COLORS.darkTeal, marginTop: 8, fontWeight: '600' },
+  beforeGo: { marginTop: 14, fontSize: 18, fontWeight: '600', color: COLORS.inkBlack },
   accordionContainer: {
     borderRadius: 10,
     marginTop: 8,
@@ -370,9 +461,9 @@ const styles = StyleSheet.create({
     minHeight: 36,
   },
   accordionIcon: { fontSize: 18, marginRight: 6 },
-  accordionTitle: { fontWeight: '700', fontSize: 16, flex: 1 },
+  accordionTitle: { fontWeight: '700', fontSize: 16, flex: 1, color: COLORS.inkBlack },
   accordionContent: { paddingVertical: 5, paddingLeft: 8 },
-  guideText: { fontSize: 14, color: '#333', marginBottom: 2 },
+  guideText: { fontSize: 14, color: COLORS.inkBlack, marginBottom: 2 },
   commentBox: {
     flexDirection: 'row',
     gap: 8,
@@ -383,28 +474,62 @@ const styles = StyleSheet.create({
   commentInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: COLORS.ashGrey,
     borderRadius: 10,
     padding: 10,
     minHeight: 42,
     maxHeight: 120,
-    color: '#000',
+    color: COLORS.inkBlack,
+    backgroundColor: '#fff',
   },
   commentButton: {
-    backgroundColor: '#124559',
+    backgroundColor: COLORS.darkTeal,
     padding: 12,
     borderRadius: 10,
   },
   commentItem: {
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: COLORS.ashGrey,
   },
-  commentAuthor: { fontWeight: '700', color: '#124559', fontSize: 14 },
-  commentHandle: { color: '#888', fontSize: 11 },
-  commentText: { color: '#222', marginTop: 6, lineHeight: 18 },
+  commentAuthor: { fontWeight: '700', color: COLORS.darkTeal, fontSize: 14 },
+  commentHandle: { color: COLORS.airForceBlue, fontSize: 11 },
+  commentText: { color: COLORS.inkBlack, marginTop: 6, lineHeight: 18 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  commentAvatar: { width: 32, height: 32, borderRadius: 16, marginRight: 10, backgroundColor: '#eee' },
-  commentAvatarFallback: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#124559' },
-  commentAvatarLetter: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  commentAvatar: { width: 32, height: 32, borderRadius: 16, marginRight: 10, backgroundColor: COLORS.ashGrey },
+  commentAvatarFallback: { alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.darkTeal },
+  commentAvatarLetter: { color: COLORS.beige, fontWeight: '700', fontSize: 14 },
+  // Gallery Modal Styles
+  modalContainer: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: 'rgba(1, 22, 30, 0.95)',
+    justifyContent: 'space-between',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  modalTitle: { color: COLORS.beige, fontSize: 16, fontWeight: '600' },
+  imageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullscreenImage: { width: '100%', height: '100%' },
+  modalFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  navButton: {
+    padding: 12,
+    borderRadius: 50,
+    backgroundColor: 'rgba(239, 246, 224, 0.12)',
+  },
+  navButtonDisabled: { opacity: 0.5 },
 });
