@@ -40,6 +40,7 @@ export const TripsApi = {
   create: (body) => api.post('/api/trips', body),
   update: (id, body) => api.patch(`/api/trips/${id}`, body),
   remove: (id) => api.delete(`/api/trips/${id}`),
+  analytics: (id) => api.get(`/api/trips/${id}/analytics`),
 };
 
 export const GuidesApi = {

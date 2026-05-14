@@ -3,9 +3,10 @@ import { prisma } from '../../config/db';
 import { ApiError } from '../../utils/ApiError';
 import type { ListTripsQuery } from './trips.schema';
 
+
 const tripInclude = {
   category: true,
-  user: { select: { id: true, username: true, fullName: true, profilePicture: true } },
+  user: { select: { id: true, username: true, fullName: true, profilePicture: true, isPremium: true } },
   media: true,
   guides: true,
   _count: { select: { comments: true, ratings: true, savedBy: true } },
@@ -148,4 +149,26 @@ export const remove = async (userId: number, id: number) => {
   if (!existing) throw ApiError.notFound('Trip not found');
   if (existing.userId !== userId) throw ApiError.forbidden('You do not own this trip');
   await prisma.trip.delete({ where: { id } });
+};
+
+export const analytics = async (userId: number, id: number) => {
+  const existing = await prisma.trip.findUnique({ where: { id } });
+  if (!existing) throw ApiError.notFound('Trip not found');
+  if (existing.userId !== userId) throw ApiError.forbidden('You do not own this trip');
+
+  const rating = await computeRating(id);
+  const saves = await prisma.savedTrip.count({ where: { tripId: id } });
+  const comments = await prisma.comment.count({ where: { tripId: id } });
+
+  // Deterministic mock views based on trip ID
+  const views = (id * 137) % 5000 + 1200;
+
+  return {
+    views,
+    saves,
+    comments,
+    averageRating: rating.average,
+    totalRatings: rating.count,
+    engagementRate: ((saves + comments + rating.count) / views * 100).toFixed(2)
+  };
 };

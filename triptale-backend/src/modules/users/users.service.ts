@@ -10,6 +10,8 @@ const PUBLIC_USER = {
   fullName: true,
   profilePicture: true,
   bio: true,
+  isPremium: true,
+  isVerifiedPremium: true,
   createdAt: true,
 } as const;
 

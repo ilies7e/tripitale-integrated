@@ -16,6 +16,7 @@ import {
 import { UsersApi } from '../../../src/api/services';
 import { resolveMediaUrl } from '../../../src/api/config';
 import { useAuth } from '../../../src/context/AuthContext';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 const COLORS = {
   inkBlack: '#01161E',
@@ -127,7 +128,10 @@ export default function ViewProfile() {
         <Ionicons name="chevron-back" size={24} color={COLORS.inkBlack} />
       </TouchableOpacity>
       {profile.profilePicture ? (
-        <Image source={{ uri: profile.profilePicture }} style={styles.avatar} />
+        <View>
+          <VerifiedBadge isVerified={profile.isPremium} size={35} style={{ position: 'absolute', bottom: 0, right: 0, zIndex: 20, elevation: 20 }} />
+          <Image source={{ uri: profile.profilePicture }} style={styles.avatar} />
+        </View>
       ) : (
         <View style={[styles.avatar, styles.avatarFallback]}>
           <Ionicons name="person" size={50} color={COLORS.beige} />

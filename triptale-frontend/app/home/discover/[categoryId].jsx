@@ -8,6 +8,7 @@ import { resolveMediaUrl } from '../../../src/api/config';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import COLORS from '@/assets/colors/colors';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { isProtectedReactElement } from 'expo-router/build/views/Protected';
 const ICON_BY_SLUG = {
   camping: 'campground',
   'hotel-vacation': 'hotel',
@@ -45,6 +46,7 @@ const mapTrip = (t) => {
     image: resolveMediaUrl(t.coverPhoto || t.media?.[0]?.mediaUrl),
     authorName: t.user?.fullName || t.user?.username || 'Traveler',
     authorPic: resolveMediaUrl(t.user?.profilePicture),
+    isPremium: t.user?.isPremium,
   };
 };
 

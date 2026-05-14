@@ -90,7 +90,19 @@ export default function PreviewTrip() {
         },
       ]);
     } catch (err) {
-      Alert.alert('Publish failed', err?.message || 'Something went wrong.');
+      const errorMsg = err?.response?.data?.message || err?.message || '';
+      if (errorMsg.includes('FREE_LIMIT_REACHED')) {
+        Alert.alert(
+          'Media Limit Reached',
+          'Free users are limited to 10 uploads per trip. Upgrade to Premium for unlimited uploads!',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Upgrade to Premium', onPress: () => router.push('/home/premium') }
+          ]
+        );
+      } else {
+        Alert.alert('Publish failed', errorMsg || 'Something went wrong.');
+      }
     } finally {
       setSubmitting(false);
       setStep('');

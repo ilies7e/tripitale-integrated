@@ -3,6 +3,7 @@ import COLORS from '@/assets/colors/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import VerifiedBadge from './VerifiedBadge';
 import {
   Dimensions,
   Image,
@@ -23,6 +24,7 @@ export default function SliderItem({ item }) {
   const imageUri = item.image || FALLBACK_IMG;
   const authorName = item.authorName || 'Traveler';
   const authorPic = item.authorPic;
+  const isPremium = item.isPremium;
 
   return (
     <View style={styles.cardContainer}>
@@ -53,14 +55,23 @@ export default function SliderItem({ item }) {
             style={styles.profileContent}
           >
             {authorPic ? (
-              <Image source={{ uri: authorPic }} style={styles.profileImg} />
+              <View style={{ marginRight: 16 }}>
+                <VerifiedBadge isVerified={isPremium} size={24} style={{ position: 'absolute', bottom: 0, right: 0, zIndex: 20, elevation: 20 }} />
+                <Image source={{ uri: authorPic }} style={styles.profileImg} />
+              </View>
+
+
             ) : (
               <View style={[styles.profileImg, { alignItems: 'center', justifyContent: 'center' }]}>
                 <Ionicons name="person" size={40} color="#ccc" />
               </View>
             )}
             <View style={styles.profileTextCol}>
-              <Text style={styles.profileName}>{authorName}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.profileName}>{authorName}</Text>
+                {/* Assuming item.isVerifiedPremium is passed from backend */}
+
+              </View>
               <Text style={styles.profileRole}>professional traveler</Text>
             </View>
           </Pressable>
@@ -137,7 +148,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     backgroundColor: COLORS.beige,
-    marginRight: 16,
+
   },
   profileTextCol: {
     justifyContent: 'center',

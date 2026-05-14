@@ -21,6 +21,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { CommentsApi, RatingsApi, SavedTripsApi, TripsApi } from '../../src/api/services';
 import { resolveMediaUrl } from '../../src/api/config';
 import { useAuth } from '../../src/context/AuthContext';
+import VerifiedBadge from '@/components/VerifiedBadge'
 
 const COLORS = {
   inkBlack: '#01161E',
@@ -65,6 +66,7 @@ export default function TripDetails() {
   const [newComment, setNewComment] = useState('');
   const [galleryModalVisible, setGalleryModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
 
   const load = useCallback(async () => {
     if (!tripId) return;
@@ -175,6 +177,8 @@ export default function TripDetails() {
   const banner = resolveMediaUrl(trip.coverPhoto || trip.media?.[0]?.mediaUrl);
   const author = trip.user;
 
+
+
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" />
@@ -183,7 +187,14 @@ export default function TripDetails() {
           <Icon name="chevron-back" size={28} color={COLORS.inkBlack} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>TripTale</Text>
-        <Icon name="earth" size={25} color={COLORS.darkTeal} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          {author?.id === user?.id && (
+            <TouchableOpacity onPress={() => router.push(`/trip/${tripId}/analytics`)}>
+              <Icon name="analytics" size={25} color={COLORS.darkTeal} />
+            </TouchableOpacity>
+          )}
+          <Icon name="earth" size={25} color={COLORS.darkTeal} />
+        </View>
       </View>
 
       <View style={styles.bannerContainer}>
@@ -197,9 +208,14 @@ export default function TripDetails() {
           <TouchableOpacity
             onPress={() => author?.id && router.push(`/home/profile/${author.id}`)}
           >
-            <Text style={styles.postedBy}>
-              posted by{'\n'}{author?.fullName || author?.username || 'Traveler'}
-            </Text>
+            <View style={styles.postedBy}>
+              <Text style={{ color: COLORS.beige }}>posted by</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={{ color: COLORS.beige }}>{author?.fullName || author?.username || 'Traveler'}</Text>
+                <VerifiedBadge isVerified={author?.isPremium} />
+              </View>
+
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -414,7 +430,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   camping: { color: COLORS.beige, fontWeight: 'bold', fontSize: 22 },
-  postedBy: { textAlign: 'center', color: COLORS.beige, fontSize: 16 },
+  postedBy: { flexDirection: 'column', alignItems: 'center', color: COLORS.beige, fontSize: 16 },
   detailsCard: {
     flex: 1,
     backgroundColor: COLORS.beige,

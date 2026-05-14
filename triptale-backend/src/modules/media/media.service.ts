@@ -19,6 +19,14 @@ export const attach = async (
   if (trip.userId !== userId) throw ApiError.forbidden('You do not own this trip');
   if (!files?.length) throw ApiError.badRequest('No files uploaded');
 
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) {
+    const currentMediaCount = await prisma.tripMedia.count({ where: { tripId } });
+    if (currentMediaCount + files.length > 10) {
+      throw ApiError.forbidden('FREE_LIMIT_REACHED: Upgrade to Premium for unlimited uploads');
+    }
+  }
+
   const created = await prisma.$transaction(
     files.map((file) =>
       prisma.tripMedia.create({

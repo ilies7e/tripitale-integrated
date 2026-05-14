@@ -11,15 +11,21 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  username       String   @unique
-  email          String   @unique
-  password       String
-  fullName       String?
-  profilePicture String?
-  bio            String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  username          String   @unique
+  email             String   @unique
+  password          String
+  fullName          String?
+  profilePicture    String?
+  bio               String?
+  
+  isPremium         Boolean  @default(false)
+  premiumSince      DateTime?
+  premiumPlan       String?
+  isVerifiedPremium Boolean  @default(false)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   trips         Trip[]
   comments      Comment[]

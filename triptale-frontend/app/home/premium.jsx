@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Animated,
   ImageBackground,
@@ -12,6 +12,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 
 const COLORS = {
@@ -29,39 +31,17 @@ const FEATURES = [
   {
     icon: 'star',
     title: 'Verified Premium Badge',
-    description:
-      'Stand out with a golden badge on your profile and all your trip posts, showing travellers you are a trusted creator.',
+    description: 'Stand out with a golden badge on your profile and posts, showing you are a trusted creator.',
     color: '#C9A84C',
   },
   {
     icon: 'analytics-outline',
     title: 'Advanced Trip Analytics',
-    description:
-      'See detailed insights — views, saves, ratings over time, and audience demographics — for every trip you post.',
+    description: 'Track your impact. See views, saves, and engagement rate for all your adventures.',
     color: '#598392',
   },
   {
     icon: 'images-outline',
-    title: 'Unlimited Media Uploads',
-    description:
-      'Upload unlimited photos and videos per trip. Free accounts are limited to 10 media items per post.',
-    color: '#124559',
-  },
-  {
-    icon: 'people-outline',
-    title: 'Priority in Discovery',
-    description:
-      'Your trips get boosted placement on the Discover feed, reaching more travellers organically.',
-    color: '#598392',
-  },
-  {
-    icon: 'chatbubbles-outline',
-    title: 'Exclusive Community Access',
-    description:
-      'Join the Premium Creators lounge — a private space to connect, collaborate, and get early access to new features.',
-    color: '#124559',
-  },
-  {
     icon: 'shield-checkmark-outline',
     title: 'Ad-Free Experience',
     description:
@@ -154,7 +134,7 @@ export default function PremiumScreen() {
           <TouchableOpacity
             style={styles.upgradeBtn}
             activeOpacity={0.85}
-            onPress={() => {/* TODO: handle upgrade */}}
+            onPress={() => {/* TODO: handle upgrade */ }}
           >
             <Ionicons name="star" size={16} color={COLORS.inkBlack} />
             <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>

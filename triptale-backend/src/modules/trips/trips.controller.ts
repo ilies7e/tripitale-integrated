@@ -28,3 +28,9 @@ export const remove = async (req: Request, res: Response) => {
   await service.remove(req.user.id, Number(req.params.id));
   res.status(204).send();
 };
+
+export const analytics = async (req: Request, res: Response) => {
+  if (!req.user) throw ApiError.unauthorized();
+  const data = await service.analytics(req.user.id, Number(req.params.id));
+  res.json(data);
+};

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useState } from 'react';
+import VerifiedBadge from '../../components/VerifiedBadge';
 import { ActivityIndicator, FlatList, ImageBackground, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -128,7 +129,12 @@ export default function MyProfile() {
             </View>
           )}
           <View style={styles.nameStatsContainer}>
-            <Text style={styles.nameText}>{user?.fullName || user?.username || 'Traveler'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', fontFamily: 'serif', color: COLORS.inkBlack }}>
+                {user?.fullName || user?.username || 'Traveler'}
+              </Text>
+              <VerifiedBadge isVerified={user?.isVerifiedPremium} size={20} style={{ marginLeft: 6 }} />
+            </View>
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <Text style={styles.statNumber}>{formatCount(trips.length)}</Text>

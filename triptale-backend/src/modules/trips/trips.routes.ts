@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { requireAuth } from '../../middleware/auth';
+import { requirePremium } from '../../middleware/premium';
 import { validate } from '../../middleware/validate';
 import * as controller from './trips.controller';
 import { createTripSchema, idParamSchema, listTripsSchema, updateTripSchema } from './trips.schema';
@@ -71,6 +72,7 @@ router.post('/', requireAuth, validate(createTripSchema), asyncHandler(controlle
  *     security: [ { bearerAuth: [] } ]
  */
 router.get('/:id', validate(idParamSchema, 'params'), asyncHandler(controller.getById));
+router.get('/:id/analytics', requireAuth, requirePremium, validate(idParamSchema, 'params'), asyncHandler(controller.analytics));
 router.patch(
   '/:id',
   requireAuth,
