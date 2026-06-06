@@ -5,8 +5,8 @@ dotenv.config();
 
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(4000),
-  APP_URL: z.string().default('http://localhost:4000'),
+  PORT: z.coerce.number().default(3000),
+  APP_URL: z.string().default('http://localhost:3000'),
   DATABASE_URL: z.string().default('file:./dev.db'),
   JWT_ACCESS_SECRET: z.string().default('dev-access-secret-change-me'),
   JWT_REFRESH_SECRET: z.string().default('dev-refresh-secret-change-me'),
