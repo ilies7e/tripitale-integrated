@@ -4,8 +4,15 @@ import Constants from 'expo-constants';
 
 const STORAGE_KEY = 'triptale.apiBaseUrl';
 
+// Check for environment-set URL (for production builds)
+const ENV_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 // Pick a sane default based on where the app is running.
 const deriveDefaultBaseUrl = () => {
+
+   // 1. First priority: environment variable (for production builds)
+  if (ENV_BASE_URL) return ENV_BASE_URL;
+
   // Prefer LAN IP exposed by Metro/Expo when running via Expo Go
   const hostUri =
     Constants?.expoConfig?.hostUri ||

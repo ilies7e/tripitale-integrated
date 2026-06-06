@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "triptale_ver0.1",
-    "slug": "triptale_ver0.1",
+    "slug": "triptale-ver01",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,11 +15,11 @@
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundImage": "./assets/images/android-icon-background.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.zoomix.triptalever01"
     },
     "web": {
       "output": "static",
@@ -43,7 +43,13 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cd9758f3-900b-4b60-8da7-096251f050cf"
+      }
     }
   }
 }
