@@ -4,7 +4,7 @@ import { prisma } from './config/db';
 
 const app = buildApp();
 
-const server = app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
   console.log(`[triptale] listening on ${env.APP_URL} (env=${env.NODE_ENV})`);
   // eslint-disable-next-line no-console
