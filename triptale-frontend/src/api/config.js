@@ -10,7 +10,7 @@ const ENV_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 // Pick a sane default based on where the app is running.
 const deriveDefaultBaseUrl = () => {
 
-   // 1. First priority: environment variable (for production builds)
+  // 1. First priority: environment variable (for production builds)
   if (ENV_BASE_URL) return ENV_BASE_URL;
 
   // Prefer LAN IP exposed by Metro/Expo when running via Expo Go
@@ -39,7 +39,7 @@ export const setApiBaseUrl = async (url) => {
 
 export const loadApiBaseUrl = async () => {
   const stored = await AsyncStorage.getItem(STORAGE_KEY);
-  if (stored) currentBaseUrl = stored;
+  if (stored) currentBaseUrl = stored.trim().replace(/\/+$/, ''); // strip trailing slash
   return currentBaseUrl;
 };
 
