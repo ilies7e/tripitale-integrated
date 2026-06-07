@@ -4,15 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import VerifiedBadge from './VerifiedBadge';
-import {
-  Dimensions,
-  Image,
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground } from 'expo-image';
 
 
 const FALLBACK_IMG =
@@ -29,7 +22,7 @@ export default function SliderItem({ item }) {
   return (
     <View style={styles.cardContainer}>
       <Pressable onPress={() => router.push(`/trip/${item.id}`)} style={styles.imgPress}>
-        <ImageBackground source={{ uri: imageUri }} style={styles.imgCard} resizeMode="cover">
+        <ImageBackground source={{ uri: imageUri }} style={styles.imgCard} contentFit="cover">
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.9)']}
             locations={[0, 0.5, 1]}

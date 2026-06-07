@@ -1,7 +1,8 @@
 import Slider from '@/components/Slider';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Dimensions, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground } from 'expo-image';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { TripsApi } from '../../../src/api/services';
 import { resolveMediaUrl } from '../../../src/api/config';

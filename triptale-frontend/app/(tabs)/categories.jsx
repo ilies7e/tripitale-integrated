@@ -1,16 +1,8 @@
 // Shows: Categories (Camping, Hotel, etc.) — fetched from backend
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  ImageBackground,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground } from 'expo-image';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { CategoriesApi } from '../../src/api/services';
 

@@ -1,22 +1,8 @@
 // Trip detail screen — wired to backend (guides, gallery, save, rating, comments)
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Platform,
-  StatusBar,
-} from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Platform, StatusBar } from 'react-native';
+import { Image } from 'expo-image';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { CommentsApi, RatingsApi, SavedTripsApi, TripsApi } from '../../src/api/services';
 import { resolveMediaUrl } from '../../src/api/config';
@@ -375,7 +361,7 @@ export default function TripDetails() {
               <Image
                 source={{ uri: resolveMediaUrl(gallery[selectedImageIndex].mediaUrl) }}
                 style={styles.fullscreenImage}
-                resizeMode="contain"
+                contentFit="contain"
               />
             </View>
           )}
